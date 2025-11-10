@@ -1,15 +1,16 @@
-
 import React, { useEffect } from 'react';
-import { X, Copy, Share, Heart } from 'lucide-react';
+import { X, Copy, Share, Heart, ArrowLeft, ArrowRight } from 'lucide-react';
 import { BibleVerse } from '../pages/Index';
 import { useToast } from '../hooks/use-toast';
 
 interface ZoomedVerseProps {
   verse: BibleVerse;
   onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
 }
 
-export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose }) => {
+export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose, onPrev, onNext }) => {
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,9 +60,20 @@ export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose }) => {
     }
   };
 
+  useEffect(() => {
+  const handleKeys = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft' && onPrev) onPrev();
+    if (e.key === 'ArrowRight' && onNext) onNext();
+    if (e.key === 'Escape') onClose();
+  };
+  document.addEventListener('keydown', handleKeys);
+  return () => document.removeEventListener('keydown', handleKeys);
+}, [onPrev, onNext, onClose]);
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 backdrop-blur-xl rounded-3xl shadow-2xl animate-scale-in">
+      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/90 rounded-3xl shadow-2xl animate-scale-in flex flex-col items-center">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -70,11 +82,33 @@ export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose }) => {
           <X className="w-6 h-6 text-gray-600" />
         </button>
 
+        {/* Previous Button */}
+        {onPrev && (
+          <button
+            onClick={onPrev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full shadow-lg p-3 transition"
+            aria-label="Previous Verse"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Next Button */}
+        {onNext && (
+          <button
+            onClick={onNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full shadow-lg p-3 transition"
+            aria-label="Next Verse"
+          >
+            <ArrowRight className="w-6 h-6" />
+          </button>
+        )}
+
         {/* Content */}
-        <div className="p-8 md:p-12">
+        <div className="p-8 md:p-12 w-full flex flex-col items-center">
           {/* Reference header */}
           <div className="text-center mb-8">
-            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-lg font-semibold mb-4">
+            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-lg font-semibold mb-4 shadow">
               {verse.reference}
             </div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -83,11 +117,10 @@ export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose }) => {
           </div>
 
           {/* Main verse text */}
-          <div className="relative">
-            <div className="absolute -top-4 -left-4 text-8xl text-blue-200 font-serif select-none">"</div>
-            <div className="absolute -bottom-8 -right-4 text-8xl text-blue-200 font-serif select-none">"</div>
-            
-            <blockquote className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-gray-800 text-center font-serif px-8 py-12 relative z-10">
+          <div className="relative w-full">
+            <div className="absolute -top-4 -left-4 text-8xl text-blue-100 font-serif select-none">"</div>
+            <div className="absolute -bottom-8 -right-4 text-8xl text-blue-100 font-serif select-none">"</div>
+            <blockquote className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-gray-800 text-center font-serif px-8 py-12 relative z-10 bg-white/70 rounded-2xl shadow">
               {verse.text}
             </blockquote>
           </div>
@@ -106,7 +139,7 @@ export const ZoomedVerse: React.FC<ZoomedVerseProps> = ({ verse, onClose }) => {
               className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               <Copy className="w-5 h-5" />
-              Copy Verse
+              Copy
             </button>
             
             <button

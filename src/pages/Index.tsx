@@ -19,7 +19,7 @@ const Index = () => {
   const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null);
   const [showBibleView, setShowBibleView] = useState(false);
 
-  // 🔹 Separate persistent selection state for each mode
+  // 🔹 Separate selection state for each mode
   const [singleVerseState, setSingleVerseState] = useState({
     book: canonicalBookOrder[0],
     chapter: 1,
@@ -47,7 +47,7 @@ const Index = () => {
     findVerse(bibleVerses, "Philippians", 4, 13),
   ].filter(Boolean) as BibleVerse[];
 
-  // 🔹 Mode-specific handlers
+  // Handlers for each mode
   const handleSingleVerseChange = (type: 'book' | 'chapter' | 'verseNum', value: string | number) => {
     setSingleVerseState(prev => ({ ...prev, [type]: value }));
   };
@@ -62,6 +62,25 @@ const Index = () => {
 
   const handleCloseZoom = () => {
     setSelectedVerse(null);
+  };
+
+  // 🔹 New: navigation handlers for ZoomedVerse
+  const handlePrevVerse = () => {
+    if (!selectedVerse || bibleVerses.length === 0) return;
+
+    const currentIndex = bibleVerses.findIndex(v => v.reference === selectedVerse.reference);
+    if (currentIndex > 0) {
+      setSelectedVerse(bibleVerses[currentIndex - 1]);
+    }
+  };
+
+  const handleNextVerse = () => {
+    if (!selectedVerse || bibleVerses.length === 0) return;
+
+    const currentIndex = bibleVerses.findIndex(v => v.reference === selectedVerse.reference);
+    if (currentIndex < bibleVerses.length - 1) {
+      setSelectedVerse(bibleVerses[currentIndex + 1]);
+    }
   };
 
   return (
@@ -91,7 +110,6 @@ const Index = () => {
         </header>
 
         {showBibleView ? (
-          // 🔹 Full Bible Mode
           <BibleView
             bibleVerses={bibleVerses}
             selectedBook={fullBibleState.book}
@@ -103,7 +121,6 @@ const Index = () => {
             onVerseSelect={handleVerseSelect}
           />
         ) : (
-          // 🔹 Single Verse Mode
           <>
             <VerseSelector
               bibleVerses={bibleVerses}
@@ -116,7 +133,6 @@ const Index = () => {
               onVerseSelect={handleVerseSelect}
             />
 
-            {/* Famous Verses Section */}
             <div className="mb-8">
               <h3 className="text-2xl font-semibold text-center text-gray-700 mb-6">
                 Famous Verses
@@ -137,8 +153,14 @@ const Index = () => {
           </>
         )}
 
+        {/* 🔹 Zoomed Verse with Prev/Next Navigation */}
         {selectedVerse && (
-          <ZoomedVerse verse={selectedVerse} onClose={handleCloseZoom} />
+          <ZoomedVerse
+            verse={selectedVerse}
+            onClose={handleCloseZoom}
+            onPrev={handlePrevVerse}
+            onNext={handleNextVerse}
+          />
         )}
       </div>
     </div>
